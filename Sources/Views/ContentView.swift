@@ -17,5 +17,6 @@ struct ContentView: View {
                     .background(Color(NSColor.windowBackgroundColor))
             }
         }
+        .focusedSceneValue(\.appState, appState)
     }
 }
