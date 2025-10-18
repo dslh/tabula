@@ -26,20 +26,21 @@ class PTYController: NSObject, ObservableObject, LocalProcessTerminalViewDelegat
         var env = ProcessInfo.processInfo.environment
         env["TERM"] = "xterm-256color"
         env["COLORTERM"] = "truecolor"
+        env["PWD"] = workingDirectory
 
         // Convert environment to array of C strings
         let envArray = env.map { "\($0.key)=\($0.value)" }
 
-        // Start the shell process
-        let args = [shellPath] // Shell will run in login mode by default
-
-        // Change to working directory before starting shell
-        FileManager.default.changeCurrentDirectoryPath(workingDirectory)
+        // Start the shell as a login shell
+        // For a login shell, we use -l flag
+        // SwiftTerm will automatically set argv[0] to the shell name
+        let args: [String] = []
 
         terminalView.startProcess(
             executable: shellPath,
             args: args,
-            environment: envArray
+            environment: envArray,
+            execName: "-" + (shellPath as NSString).lastPathComponent  // Login shell
         )
     }
 
