@@ -28,7 +28,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Force the app to activate and accept keyboard input
         // This is needed when running as a Swift Package executable
         NSApplication.shared.setActivationPolicy(.regular)
-        NSApplication.shared.activate(ignoringOtherApps: true)
     }
 
     func applicationWillTerminate(_ notification: Notification) {

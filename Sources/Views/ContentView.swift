@@ -11,6 +11,7 @@ struct ContentView: View {
             if let group = appState.selectedGroup,
                let tab = group.selectedTab {
                 TerminalView(tab: tab)
+                    .id(tab.id)  // Force new view instance for each tab
             } else {
                 Text("No terminal selected")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
