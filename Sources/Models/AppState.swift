@@ -1,0 +1,121 @@
+import Foundation
+import SwiftUI
+
+/// Global application state managing all tab groups
+class AppState: ObservableObject {
+    @Published var groups: [TabGroup]
+    @Published var selectedGroupId: UUID?
+    @Published var preferences: Preferences
+
+    init() {
+        // Start with one group containing one tab
+        let firstTab = TerminalTab(title: "Terminal", isActive: true)
+        let firstGroup = TabGroup(name: "Group 1", tabs: [firstTab], isExpanded: true)
+
+        self.groups = [firstGroup]
+        self.selectedGroupId = firstGroup.id
+        self.preferences = Preferences()
+
+        // Try to restore saved state
+        restoreState()
+    }
+
+    var selectedGroup: TabGroup? {
+        groups.first { $0.id == selectedGroupId }
+    }
+
+    // MARK: - Group Management
+
+    func createNewGroup() {
+        let groupNumber = groups.count + 1
+        let newTab = TerminalTab(title: "Terminal", isActive: true)
+        let newGroup = TabGroup(name: "Group \(groupNumber)", tabs: [newTab], isExpanded: true)
+
+        // Collapse all other groups
+        for group in groups {
+            group.isExpanded = false
+        }
+
+        groups.append(newGroup)
+        selectedGroupId = newGroup.id
+        saveState()
+    }
+
+    func removeGroup(_ group: TabGroup) {
+        groups.removeAll { $0.id == group.id }
+        if selectedGroupId == group.id {
+            selectedGroupId = groups.first?.id
+        }
+        saveState()
+    }
+
+    func selectGroup(_ groupId: UUID) {
+        // Collapse all groups
+        for group in groups {
+            group.isExpanded = false
+        }
+
+        // Expand and select the target group
+        if let targetGroup = groups.first(where: { $0.id == groupId }) {
+            targetGroup.isExpanded = true
+            selectedGroupId = groupId
+        }
+    }
+
+    func selectNextGroup() {
+        guard let currentId = selectedGroupId,
+              let currentIndex = groups.firstIndex(where: { $0.id == currentId })
+        else { return }
+
+        let nextIndex = (currentIndex + 1) % groups.count
+        selectGroup(groups[nextIndex].id)
+    }
+
+    func selectPreviousGroup() {
+        guard let currentId = selectedGroupId,
+              let currentIndex = groups.firstIndex(where: { $0.id == currentId })
+        else { return }
+
+        let previousIndex = (currentIndex - 1 + groups.count) % groups.count
+        selectGroup(groups[previousIndex].id)
+    }
+
+    // MARK: - Tab Management
+
+    func createNewTab(in group: TabGroup) {
+        let newTab = TerminalTab(title: "Terminal", isActive: true)
+        group.addTab(newTab)
+        group.selectedTabId = newTab.id
+        saveState()
+    }
+
+    func createNewTabInSelectedGroup() {
+        guard let group = selectedGroup else { return }
+        createNewTab(in: group)
+    }
+
+    // MARK: - Persistence
+
+    private func saveState() {
+        // TODO: Implement persistence
+        print("Saving state...")
+    }
+
+    private func restoreState() {
+        // TODO: Implement persistence
+        print("Restoring state...")
+    }
+}
+
+/// User preferences for the terminal
+struct Preferences {
+    var fontName: String = "SF Mono"
+    var fontSize: CGFloat = 13
+    var colorScheme: ColorScheme = .system
+
+    enum ColorScheme: String, CaseIterable {
+        case light = "Light"
+        case dark = "Dark"
+        case system = "System"
+    }
+}
