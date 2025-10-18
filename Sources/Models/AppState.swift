@@ -96,14 +96,26 @@ class AppState: ObservableObject {
 
     // MARK: - Persistence
 
-    private func saveState() {
-        // TODO: Implement persistence
-        print("Saving state...")
+    func saveState() {
+        PersistenceManager.shared.saveState(self)
     }
 
     private func restoreState() {
-        // TODO: Implement persistence
-        print("Restoring state...")
+        guard let persistedState = PersistenceManager.shared.loadState() else {
+            print("No saved state found, using defaults")
+            return
+        }
+
+        // Restore groups
+        self.groups = persistedState.groups.map { $0.toTabGroup() }
+
+        // Restore selected group
+        self.selectedGroupId = persistedState.selectedGroupId
+
+        // Restore preferences
+        self.preferences = persistedState.preferences.toPreferences()
+
+        print("Restored \(groups.count) group(s)")
     }
 }
 
