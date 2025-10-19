@@ -37,6 +37,7 @@ class TerminalTab: Identifiable, ObservableObject {
 
         // Create PTYController once when tab is created
         self.ptyController = PTYController()
+        self.ptyController.tab = self  // Link controller back to tab
         print("🆕 [TerminalTab] Created tab \(id) with controller \(ObjectIdentifier(ptyController))")
     }
 }

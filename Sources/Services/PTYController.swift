@@ -4,6 +4,7 @@ import SwiftTerm
 /// Manages the PTY (pseudo-terminal) and shell process lifecycle
 class PTYController: NSObject, ObservableObject, LocalProcessTerminalViewDelegate {
     weak var terminalView: LocalProcessTerminalView?
+    weak var tab: TerminalTab?
     private var childProcessId: Int32 = 0
     private var shellPath: String {
         // Use user's default shell from environment, fallback to zsh
@@ -59,14 +60,18 @@ class PTYController: NSObject, ObservableObject, LocalProcessTerminalViewDelegat
     }
 
     func setTerminalTitle(source: LocalProcessTerminalView, title: String) {
-        // Could update the tab title here
-        print("Terminal title: \(title)")
+        print("📋 [PTYController] Terminal title: \(title)")
+        tab?.title = title
     }
 
     func hostCurrentDirectoryUpdate (source: SwiftTerm.TerminalView, directory: String?) {
-        // Could update the working directory in the tab here
-        if let dir = directory {
-            print("Working directory: \(dir)")
+        guard let dir = directory else { return }
+        print("📁 [PTYController] Working directory: \(dir)")
+
+        // Parse the URL and extract the path
+        if let url = URL(string: dir) {
+            let path = url.path
+            tab?.workingDirectory = path
         }
     }
 

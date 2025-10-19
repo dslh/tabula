@@ -24,6 +24,12 @@ struct TerminalView: View {
                 } else {
                     print("♻️ [TerminalView] Reusing existing shell session")
                 }
+
+                // Auto-focus the terminal view
+                DispatchQueue.main.async {
+                    tab.terminalView.window?.makeFirstResponder(tab.terminalView)
+                    print("🎯 [TerminalView] Set terminal as first responder")
+                }
             }
             .onDisappear {
                 print("👋 [TerminalView] onDisappear for tab \(tab.id)")

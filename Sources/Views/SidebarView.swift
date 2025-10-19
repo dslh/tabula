@@ -102,6 +102,15 @@ struct TabRow: View {
         group.selectedTabId == tab.id
     }
 
+    // Abbreviate home directory with ~
+    private func abbreviatedPath(_ path: String) -> String {
+        let homeDir = FileManager.default.homeDirectoryForCurrentUser.path
+        if path.hasPrefix(homeDir) {
+            return path.replacingOccurrences(of: homeDir, with: "~")
+        }
+        return path
+    }
+
     var body: some View {
         HStack(spacing: 12) {
             // Thumbnail
@@ -130,7 +139,7 @@ struct TabRow: View {
                     .font(.system(size: 13, weight: isSelected ? .semibold : .regular))
                     .lineLimit(1)
 
-                Text(tab.workingDirectory)
+                Text(abbreviatedPath(tab.workingDirectory))
                     .font(.system(size: 11))
                     .foregroundColor(.secondary)
                     .lineLimit(1)
