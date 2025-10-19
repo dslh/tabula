@@ -29,6 +29,9 @@ struct GroupSettingsDialog: View {
                         .font(.headline)
                     TextField("Group Name", text: $groupName)
                         .textFieldStyle(.roundedBorder)
+                        .onSubmit {
+                            saveSettings()
+                        }
                 }
 
                 VStack(alignment: .leading, spacing: 8) {
@@ -37,6 +40,9 @@ struct GroupSettingsDialog: View {
                     HStack {
                         TextField("Directory Path", text: $workingDirectory)
                             .textFieldStyle(.roundedBorder)
+                            .onSubmit {
+                                saveSettings()
+                            }
 
                         Button("Browse...") {
                             selectDirectory()
