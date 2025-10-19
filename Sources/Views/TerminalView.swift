@@ -6,13 +6,21 @@ struct TerminalView: View {
     @EnvironmentObject var appState: AppState
     @StateObject private var controller = PTYController()
 
+    init(tab: TerminalTab) {
+        self.tab = tab
+        print("🎬 [TerminalView] INIT for tab \(tab.id)")
+    }
+
     var body: some View {
         SwiftTermView(controller: controller, tab: tab)
             .onAppear {
+                print("👁️ [TerminalView] onAppear for tab \(tab.id)")
+                print("👁️ [TerminalView] Controller ID: \(ObjectIdentifier(controller))")
                 tab.ptyController = controller
                 controller.startShell()
             }
             .onDisappear {
+                print("👋 [TerminalView] onDisappear for tab \(tab.id)")
                 // Keep the shell running, just detach
             }
     }

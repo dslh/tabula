@@ -26,10 +26,13 @@ class TabGroup: Identifiable, ObservableObject {
     }
 
     func addTab(_ tab: TerminalTab) {
+        print("📝 [TabGroup] Adding tab \(tab.id) to group '\(name)'. Current tab count: \(tabs.count)")
         tabs.append(tab)
         if tabs.count == 1 {
             selectedTabId = tab.id
+            print("📝 [TabGroup] First tab in group, auto-selecting")
         }
+        print("📝 [TabGroup] Tab added. New tab count: \(tabs.count)")
     }
 
     func removeTab(_ tab: TerminalTab) {

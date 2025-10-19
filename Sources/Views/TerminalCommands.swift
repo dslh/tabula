@@ -19,12 +19,12 @@ struct TerminalCommands: Commands {
 
         CommandMenu("Tab") {
             Button("Next Tab") {
-                appState?.selectedGroup?.selectNextTab()
+                appState?.selectNextTab()
             }
             .keyboardShortcut(.tab, modifiers: [.control])
 
             Button("Previous Tab") {
-                appState?.selectedGroup?.selectPreviousTab()
+                appState?.selectPreviousTab()
             }
             .keyboardShortcut(.tab, modifiers: [.control, .shift])
 

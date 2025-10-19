@@ -143,7 +143,7 @@ struct TabRow: View {
         .background(isSelected ? Color.accentColor.opacity(0.15) : Color.clear)
         .cornerRadius(6)
         .onTapGesture {
-            group.selectedTabId = tab.id
+            appState.selectTab(tab.id, in: group)
         }
         .contextMenu {
             Button("Close Tab") {

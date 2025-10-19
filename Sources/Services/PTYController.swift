@@ -12,15 +12,21 @@ class PTYController: NSObject, ObservableObject, LocalProcessTerminalViewDelegat
 
     override init() {
         super.init()
+        print("🔧 [PTYController] INIT - Controller ID: \(ObjectIdentifier(self))")
     }
 
     func startShell(in directory: String? = nil) {
+        print("🚀 [PTYController] startShell called - Controller ID: \(ObjectIdentifier(self))")
+
         guard let terminalView = terminalView else {
-            print("Error: terminalView not set")
+            print("❌ [PTYController] Error: terminalView not set")
             return
         }
 
+        print("✅ [PTYController] terminalView is set, starting process...")
+
         let workingDirectory = directory ?? FileManager.default.homeDirectoryForCurrentUser.path
+        print("📁 [PTYController] Working directory: \(workingDirectory)")
 
         // Set environment variables
         var env = ProcessInfo.processInfo.environment
@@ -36,12 +42,14 @@ class PTYController: NSObject, ObservableObject, LocalProcessTerminalViewDelegat
         // SwiftTerm will automatically set argv[0] to the shell name
         let args: [String] = []
 
+        print("🐚 [PTYController] Starting shell: \(shellPath)")
         terminalView.startProcess(
             executable: shellPath,
             args: args,
             environment: envArray,
             execName: "-" + (shellPath as NSString).lastPathComponent  // Login shell
         )
+        print("✅ [PTYController] startProcess completed")
     }
 
     // MARK: - LocalProcessTerminalViewDelegate
@@ -63,7 +71,7 @@ class PTYController: NSObject, ObservableObject, LocalProcessTerminalViewDelegat
     }
 
     func processTerminated (source: SwiftTerm.TerminalView, exitCode: Int32?) {
-        print("Shell process terminated with exit code: \(exitCode ?? -1)")
+        print("💀 [PTYController] Shell process terminated with exit code: \(exitCode ?? -1) - Controller ID: \(ObjectIdentifier(self))")
         // Could handle shell exit here (restart, close tab, etc.)
     }
 }

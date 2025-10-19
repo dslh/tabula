@@ -10,6 +10,7 @@ struct ContentView: View {
         } detail: {
             if let group = appState.selectedGroup,
                let tab = group.selectedTab {
+                let _ = print("🖼️ [ContentView] Rendering TerminalView for tab \(tab.id)")
                 TerminalView(tab: tab)
                     .id(tab.id)  // Force new view instance for each tab
             } else {
