@@ -30,8 +30,9 @@ class AppState: ObservableObject {
 
     func createNewGroup() {
         let groupNumber = groups.count + 1
-        let newTab = TerminalTab(title: "Terminal", isActive: true)
-        let newGroup = TabGroup(name: "Group \(groupNumber)", tabs: [newTab], isExpanded: true)
+        // Create group without any tabs initially - the first tab will be created
+        // after the user sets up the group in the settings dialog
+        let newGroup = TabGroup(name: "Group \(groupNumber)", tabs: [], isExpanded: true)
 
         // Collapse all other groups
         for group in groups {

@@ -2,6 +2,7 @@ import SwiftUI
 import AppKit
 
 struct GroupSettingsDialog: View {
+    @EnvironmentObject var appState: AppState
     @ObservedObject var group: TabGroup
     @Binding var isPresented: Bool
 
@@ -65,7 +66,7 @@ struct GroupSettingsDialog: View {
 
             HStack(spacing: 12) {
                 Button("Cancel") {
-                    isPresented = false
+                    handleCancel()
                 }
                 .keyboardShortcut(.escape)
 
@@ -78,6 +79,14 @@ struct GroupSettingsDialog: View {
         }
         .padding(24)
         .frame(minWidth: 500)
+    }
+
+    private func handleCancel() {
+        // If the group has no tabs (new group), remove it when canceling
+        if group.tabs.isEmpty {
+            appState.removeGroup(group)
+        }
+        isPresented = false
     }
 
     private func selectDirectory() {
@@ -116,6 +125,13 @@ struct GroupSettingsDialog: View {
         // Save settings
         group.name = trimmedName
         group.defaultWorkingDirectory = expandedPath
+
+        // If this is a new group with no tabs, create the first tab with the configured directory
+        if group.tabs.isEmpty {
+            let workingDir = expandedPath
+            let newTab = TerminalTab(title: "Terminal", workingDirectory: workingDir, isActive: true)
+            group.addTab(newTab)
+        }
 
         isPresented = false
     }
