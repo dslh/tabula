@@ -1,24 +1,27 @@
 import Foundation
 
 /// Represents a group of terminal tabs
-class TabGroup: Identifiable, ObservableObject {
+class TabGroup: Identifiable, ObservableObject, Equatable {
     let id: UUID
     @Published var name: String
     @Published var tabs: [TerminalTab]
     @Published var isExpanded: Bool
     @Published var selectedTabId: UUID?
+    @Published var defaultWorkingDirectory: String?
 
     init(
         id: UUID = UUID(),
         name: String = "Group",
         tabs: [TerminalTab] = [],
-        isExpanded: Bool = true
+        isExpanded: Bool = true,
+        defaultWorkingDirectory: String? = nil
     ) {
         self.id = id
         self.name = name
         self.tabs = tabs
         self.isExpanded = isExpanded
         self.selectedTabId = tabs.first?.id
+        self.defaultWorkingDirectory = defaultWorkingDirectory
     }
 
     var selectedTab: TerminalTab? {
@@ -58,5 +61,11 @@ class TabGroup: Identifiable, ObservableObject {
 
         let previousIndex = (currentIndex - 1 + tabs.count) % tabs.count
         selectedTabId = tabs[previousIndex].id
+    }
+
+    // MARK: - Equatable
+
+    static func == (lhs: TabGroup, rhs: TabGroup) -> Bool {
+        lhs.id == rhs.id
     }
 }

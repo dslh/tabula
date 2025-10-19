@@ -6,6 +6,7 @@ class AppState: ObservableObject {
     @Published var groups: [TabGroup]
     @Published var selectedGroupId: UUID?
     @Published var preferences: Preferences
+    @Published var groupToShowSettings: TabGroup?
 
     init() {
         // Start with one group containing one tab
@@ -38,6 +39,10 @@ class AppState: ObservableObject {
 
         groups.append(newGroup)
         selectedGroupId = newGroup.id
+
+        // Show settings dialog for the new group
+        groupToShowSettings = newGroup
+
         saveState()
     }
 
@@ -104,10 +109,10 @@ class AppState: ObservableObject {
         }
         print("📝 [AppState] Creating new tab in group '\(group.name)'")
 
-        // Inherit working directory from current tab
-        let workingDir = group.selectedTab?.workingDirectory ?? FileManager.default.homeDirectoryForCurrentUser.path
+        // Use group's default working directory, or fall back to home
+        let workingDir = group.defaultWorkingDirectory ?? FileManager.default.homeDirectoryForCurrentUser.path
         let newTab = TerminalTab(title: "Terminal", workingDirectory: workingDir, isActive: true)
-        print("📝 [AppState] Creating new tab with ID: \(newTab.id), inheriting directory: \(workingDir)")
+        print("📝 [AppState] Creating new tab with ID: \(newTab.id), using directory: \(workingDir)")
         group.addTab(newTab)
         group.selectedTabId = newTab.id
         print("📝 [AppState] Tab added to group '\(group.name)', selected tab ID: \(group.selectedTabId?.uuidString ?? "nil")")

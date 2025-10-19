@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var appState: AppState
+    @State private var showGroupSettings = false
 
     var body: some View {
         NavigationSplitView {
@@ -20,5 +21,18 @@ struct ContentView: View {
             }
         }
         .focusedSceneValue(\.appState, appState)
+        .sheet(isPresented: $showGroupSettings) {
+            if let group = appState.groupToShowSettings {
+                GroupSettingsDialog(group: group, isPresented: $showGroupSettings)
+            }
+        }
+        .onChange(of: appState.groupToShowSettings) { _, newValue in
+            showGroupSettings = newValue != nil
+        }
+        .onChange(of: showGroupSettings) { _, newValue in
+            if !newValue {
+                appState.groupToShowSettings = nil
+            }
+        }
     }
 }

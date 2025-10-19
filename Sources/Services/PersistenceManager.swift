@@ -66,6 +66,7 @@ struct PersistedGroup: Codable {
     var tabs: [PersistedTab]
     var isExpanded: Bool
     var selectedTabId: UUID?
+    var defaultWorkingDirectory: String?
 
     init(from group: TabGroup) {
         self.id = group.id
@@ -73,6 +74,7 @@ struct PersistedGroup: Codable {
         self.tabs = group.tabs.map { PersistedTab(from: $0) }
         self.isExpanded = group.isExpanded
         self.selectedTabId = group.selectedTabId
+        self.defaultWorkingDirectory = group.defaultWorkingDirectory
     }
 
     func toTabGroup() -> TabGroup {
@@ -80,7 +82,8 @@ struct PersistedGroup: Codable {
             id: id,
             name: name,
             tabs: tabs.map { $0.toTerminalTab() },
-            isExpanded: isExpanded
+            isExpanded: isExpanded,
+            defaultWorkingDirectory: defaultWorkingDirectory
         )
         group.selectedTabId = selectedTabId
         return group

@@ -34,8 +34,7 @@ struct GroupSection: View {
 struct GroupHeader: View {
     @EnvironmentObject var appState: AppState
     @ObservedObject var group: TabGroup
-    @State private var isEditingName = false
-    @State private var editedName = ""
+    @State private var showSettingsDialog = false
 
     var body: some View {
         HStack(spacing: 8) {
@@ -44,23 +43,11 @@ struct GroupHeader: View {
                 .foregroundColor(.secondary)
                 .frame(width: 12)
 
-            if isEditingName {
-                TextField("Group Name", text: $editedName, onCommit: {
-                    if !editedName.isEmpty {
-                        group.name = editedName
-                    }
-                    isEditingName = false
-                })
-                .textFieldStyle(.plain)
+            Text(group.name)
                 .font(.headline)
-            } else {
-                Text(group.name)
-                    .font(.headline)
-                    .onTapGesture(count: 2) {
-                        editedName = group.name
-                        isEditingName = true
-                    }
-            }
+                .onTapGesture(count: 2) {
+                    showSettingsDialog = true
+                }
 
             Spacer()
 
@@ -80,15 +67,17 @@ struct GroupHeader: View {
             }
         }
         .contextMenu {
-            Button("Rename") {
-                editedName = group.name
-                isEditingName = true
+            Button("Settings...") {
+                showSettingsDialog = true
             }
             Divider()
             Button("Delete Group", role: .destructive) {
                 appState.removeGroup(group)
             }
             .disabled(appState.groups.count == 1)
+        }
+        .sheet(isPresented: $showSettingsDialog) {
+            GroupSettingsDialog(group: group, isPresented: $showSettingsDialog)
         }
     }
 }
