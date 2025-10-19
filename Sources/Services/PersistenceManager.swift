@@ -52,11 +52,13 @@ struct PersistedState: Codable {
     var groups: [PersistedGroup]
     var selectedGroupId: UUID?
     var preferences: PersistedPreferences
+    var isSidebarVisible: Bool
 
     init(from appState: AppState) {
         self.groups = appState.groups.map { PersistedGroup(from: $0) }
         self.selectedGroupId = appState.selectedGroupId
         self.preferences = PersistedPreferences(from: appState.preferences)
+        self.isSidebarVisible = appState.isSidebarVisible
     }
 }
 

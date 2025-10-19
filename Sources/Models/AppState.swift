@@ -7,6 +7,7 @@ class AppState: ObservableObject {
     @Published var selectedGroupId: UUID?
     @Published var preferences: Preferences
     @Published var groupToShowSettings: TabGroup?
+    @Published var isSidebarVisible: Bool = true
 
     init() {
         // Start with one group containing one tab
@@ -174,6 +175,13 @@ class AppState: ObservableObject {
         print("🔔 [AppState] Triggered objectWillChange for tab selection")
     }
 
+    // MARK: - Sidebar Management
+
+    func toggleSidebar() {
+        isSidebarVisible.toggle()
+        objectWillChange.send()
+    }
+
     // MARK: - Persistence
 
     func saveState() {
@@ -194,6 +202,9 @@ class AppState: ObservableObject {
 
         // Restore preferences
         self.preferences = persistedState.preferences.toPreferences()
+
+        // Restore sidebar visibility
+        self.isSidebarVisible = persistedState.isSidebarVisible
 
         print("Restored \(groups.count) group(s)")
     }

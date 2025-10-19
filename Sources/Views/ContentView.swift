@@ -5,7 +5,12 @@ struct ContentView: View {
     @State private var showGroupSettings = false
 
     var body: some View {
-        NavigationSplitView {
+        NavigationSplitView(columnVisibility: Binding(
+            get: { appState.isSidebarVisible ? .all : .detailOnly },
+            set: { newValue in
+                appState.isSidebarVisible = (newValue != .detailOnly)
+            }
+        )) {
             SidebarView()
                 .navigationSplitViewColumnWidth(min: 200, ideal: 250, max: 350)
         } detail: {

@@ -47,6 +47,13 @@ struct TerminalCommands: Commands {
             }
             .keyboardShortcut(.tab, modifiers: [.control, .option, .shift])
         }
+
+        CommandGroup(after: .sidebar) {
+            Button("Toggle Sidebar") {
+                appState?.toggleSidebar()
+            }
+            .keyboardShortcut("b", modifiers: [.command])
+        }
     }
 }
 
