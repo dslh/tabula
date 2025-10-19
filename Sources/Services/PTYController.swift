@@ -34,7 +34,6 @@ class PTYController: NSObject, ObservableObject, LocalProcessTerminalViewDelegat
         var env = ProcessInfo.processInfo.environment
         env["TERM"] = "xterm-256color"
         env["COLORTERM"] = "truecolor"
-        env["PWD"] = workingDirectory
 
         // Convert environment to array of C strings
         let envArray = env.map { "\($0.key)=\($0.value)" }
@@ -44,6 +43,13 @@ class PTYController: NSObject, ObservableObject, LocalProcessTerminalViewDelegat
         // SwiftTerm will automatically set argv[0] to the shell name
         let args: [String] = []
 
+        // Save the current working directory so we can restore it after spawning
+        let savedDirectory = FileManager.default.currentDirectoryPath
+
+        // Change to the desired working directory before spawning the child process
+        // The child process will inherit this directory
+        FileManager.default.changeCurrentDirectoryPath(workingDirectory)
+
         print("🐚 [PTYController] Starting shell: \(shellPath)")
         terminalView.startProcess(
             executable: shellPath,
@@ -51,6 +57,10 @@ class PTYController: NSObject, ObservableObject, LocalProcessTerminalViewDelegat
             environment: envArray,
             execName: "-" + (shellPath as NSString).lastPathComponent  // Login shell
         )
+
+        // Restore the parent process's working directory
+        FileManager.default.changeCurrentDirectoryPath(savedDirectory)
+
         print("✅ [PTYController] startProcess completed")
     }
 
