@@ -82,8 +82,9 @@ class AppState: ObservableObject {
 
     // MARK: - Tab Management
 
-    func createNewTab(in group: TabGroup) {
-        let newTab = TerminalTab(title: "Terminal", isActive: true)
+    func createNewTab(in group: TabGroup, workingDirectory: String? = nil) {
+        let workingDir = workingDirectory ?? FileManager.default.homeDirectoryForCurrentUser.path
+        let newTab = TerminalTab(title: "Terminal", workingDirectory: workingDir, isActive: true)
         print("📝 [AppState] Creating new tab with ID: \(newTab.id)")
         group.addTab(newTab)
         group.selectedTabId = newTab.id
@@ -102,7 +103,47 @@ class AppState: ObservableObject {
             return
         }
         print("📝 [AppState] Creating new tab in group '\(group.name)'")
-        createNewTab(in: group)
+
+        // Inherit working directory from current tab
+        let workingDir = group.selectedTab?.workingDirectory ?? FileManager.default.homeDirectoryForCurrentUser.path
+        let newTab = TerminalTab(title: "Terminal", workingDirectory: workingDir, isActive: true)
+        print("📝 [AppState] Creating new tab with ID: \(newTab.id), inheriting directory: \(workingDir)")
+        group.addTab(newTab)
+        group.selectedTabId = newTab.id
+        print("📝 [AppState] Tab added to group '\(group.name)', selected tab ID: \(group.selectedTabId?.uuidString ?? "nil")")
+
+        objectWillChange.send()
+        print("🔔 [AppState] Triggered objectWillChange")
+
+        saveState()
+    }
+
+    func closeCurrentTab() {
+        guard let group = selectedGroup, let currentTab = group.selectedTab else {
+            print("⚠️ [AppState] No tab to close")
+            return
+        }
+
+        print("🗑️ [AppState] Closing tab \(currentTab.id) in group '\(group.name)'")
+
+        // Don't close the last tab in the last group
+        if groups.count == 1 && group.tabs.count == 1 {
+            print("⚠️ [AppState] Cannot close the last tab")
+            return
+        }
+
+        // If this is the last tab in the group, remove the group
+        if group.tabs.count == 1 {
+            print("🗑️ [AppState] Last tab in group, removing group '\(group.name)'")
+            removeGroup(group)
+        } else {
+            // Remove the tab from the group
+            group.removeTab(currentTab)
+            objectWillChange.send()
+            print("🔔 [AppState] Triggered objectWillChange after removing tab")
+        }
+
+        saveState()
     }
 
     func selectNextTab() {

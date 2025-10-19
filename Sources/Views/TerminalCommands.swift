@@ -15,6 +15,13 @@ struct TerminalCommands: Commands {
                 appState?.createNewTabInSelectedGroup()
             }
             .keyboardShortcut("t", modifiers: [.command])
+
+            Divider()
+
+            Button("Close Tab") {
+                appState?.closeCurrentTab()
+            }
+            .keyboardShortcut("w", modifiers: [.command])
         }
 
         CommandMenu("Tab") {

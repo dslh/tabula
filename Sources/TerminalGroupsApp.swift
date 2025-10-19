@@ -11,6 +11,7 @@ struct TerminalGroupsApp: App {
                 .environmentObject(appState)
                 .frame(minWidth: 800, minHeight: 600)
         }
+        .windowStyle(.hiddenTitleBar)
         .commands {
             TerminalCommands()
         }

@@ -26,7 +26,8 @@ class PTYController: NSObject, ObservableObject, LocalProcessTerminalViewDelegat
 
         print("✅ [PTYController] terminalView is set, starting process...")
 
-        let workingDirectory = directory ?? FileManager.default.homeDirectoryForCurrentUser.path
+        // Use the provided directory, or the tab's working directory, or fall back to home
+        let workingDirectory = directory ?? tab?.workingDirectory ?? FileManager.default.homeDirectoryForCurrentUser.path
         print("📁 [PTYController] Working directory: \(workingDirectory)")
 
         // Set environment variables
