@@ -51,7 +51,9 @@ class AppState: ObservableObject {
     func removeGroup(_ group: TabGroup) {
         groups.removeAll { $0.id == group.id }
         if selectedGroupId == group.id {
-            selectedGroupId = groups.first?.id
+            if let firstGroupId = groups.first?.id {
+                selectGroup(firstGroupId)
+            }
         }
         saveState()
     }
