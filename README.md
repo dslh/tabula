@@ -1,6 +1,8 @@
-# TerminalGroups
+# Tabula
 
 A native macOS terminal emulator with advanced tab group management, built with Swift and SwiftUI.
+
+*"Tabula" - from "tabula rasa" (clean slate) - fresh terminal sessions organized by tabs.*
 
 ## Features
 
@@ -24,8 +26,9 @@ A native macOS terminal emulator with advanced tab group management, built with 
 ## Building
 
 ```bash
-# Clone or navigate to the project directory
-cd term
+# Clone the repository
+git clone https://github.com/dslh/tabula.git
+cd tabula
 
 # Build the project
 swift build
@@ -78,7 +81,7 @@ No more juggling multiple terminal windows or losing track of which tab belongs 
 
 Session data is automatically saved to:
 ```
-~/Library/Application Support/TerminalGroups/state.json
+~/Library/Application Support/Tabula/state.json
 ```
 
 ## Requirements
@@ -93,7 +96,9 @@ Session data is automatically saved to:
 
 ## License
 
-Built with Claude Code - feel free to use and modify as needed!
+MIT License - see LICENSE file for details.
+
+Built with [Claude Code](https://claude.com/claude-code).
 
 ## Roadmap
 

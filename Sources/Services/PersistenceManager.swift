@@ -6,7 +6,7 @@ class PersistenceManager {
 
     private let fileURL: URL = {
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        let appDir = appSupport.appendingPathComponent("TerminalGroups", isDirectory: true)
+        let appDir = appSupport.appendingPathComponent("Tabula", isDirectory: true)
 
         // Create directory if it doesn't exist
         try? FileManager.default.createDirectory(at: appDir, withIntermediateDirectories: true)

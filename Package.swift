@@ -2,14 +2,14 @@
 import PackageDescription
 
 let package = Package(
-    name: "TerminalGroups",
+    name: "Tabula",
     platforms: [
         .macOS(.v14)
     ],
     products: [
         .executable(
-            name: "TerminalGroups",
-            targets: ["TerminalGroups"]
+            name: "Tabula",
+            targets: ["Tabula"]
         )
     ],
     dependencies: [
@@ -17,7 +17,7 @@ let package = Package(
     ],
     targets: [
         .executableTarget(
-            name: "TerminalGroups",
+            name: "Tabula",
             dependencies: ["SwiftTerm"],
             path: "Sources"
         )
