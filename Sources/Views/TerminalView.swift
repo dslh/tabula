@@ -4,7 +4,6 @@ import SwiftTerm
 struct TerminalView: View {
     @ObservedObject var tab: TerminalTab
     @EnvironmentObject var appState: AppState
-    @StateObject private var controller = PTYController()
 
     init(tab: TerminalTab) {
         self.tab = tab
@@ -12,16 +11,23 @@ struct TerminalView: View {
     }
 
     var body: some View {
-        SwiftTermView(controller: controller, tab: tab)
+        SwiftTermView(controller: tab.ptyController, tab: tab)
             .onAppear {
                 print("👁️ [TerminalView] onAppear for tab \(tab.id)")
-                print("👁️ [TerminalView] Controller ID: \(ObjectIdentifier(controller))")
-                tab.ptyController = controller
-                controller.startShell()
+                print("👁️ [TerminalView] Controller ID: \(ObjectIdentifier(tab.ptyController))")
+
+                // Only start shell once per tab, even if view is recreated
+                if !tab.hasStartedShell {
+                    print("🚀 [TerminalView] Starting shell for first time")
+                    tab.ptyController.startShell()
+                    tab.hasStartedShell = true
+                } else {
+                    print("♻️ [TerminalView] Reusing existing shell session")
+                }
             }
             .onDisappear {
                 print("👋 [TerminalView] onDisappear for tab \(tab.id)")
-                // Keep the shell running, just detach
+                // Keep the shell running and hasStartedShell=true
             }
     }
 }
@@ -32,11 +38,10 @@ struct SwiftTermView: NSViewRepresentable {
     @ObservedObject var tab: TerminalTab
 
     func makeNSView(context: Context) -> LocalProcessTerminalView {
-        let terminalView = LocalProcessTerminalView(frame: .zero)
-        terminalView.processDelegate = controller
-        terminalView.getTerminal().silentLog = true
+        print("🖼️ [SwiftTermView] makeNSView - returning tab's persistent terminalView")
 
-        controller.terminalView = terminalView
+        // Return the tab's persistent terminal view (created once via lazy var)
+        let terminalView = tab.terminalView
 
         // Start thumbnail generation after a short delay
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
@@ -47,7 +52,7 @@ struct SwiftTermView: NSViewRepresentable {
     }
 
     func updateNSView(_ nsView: LocalProcessTerminalView, context: Context) {
-        // Update view if needed
+        print("🔄 [SwiftTermView] updateNSView called for tab \(tab.id)")
     }
 
     func makeCoordinator() -> Coordinator {

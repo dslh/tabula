@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import SwiftTerm
 
 /// Represents a single terminal tab within a group
 class TerminalTab: Identifiable, ObservableObject {
@@ -9,8 +10,19 @@ class TerminalTab: Identifiable, ObservableObject {
     @Published var thumbnail: NSImage?
     @Published var isActive: Bool
 
-    // Terminal state will be managed by PTYController
-    weak var ptyController: PTYController?
+    // Terminal state is managed by PTYController - created once and kept alive
+    let ptyController: PTYController
+    var hasStartedShell = false
+
+    // The actual terminal view - created once and kept alive with the tab
+    lazy var terminalView: LocalProcessTerminalView = {
+        let view = LocalProcessTerminalView(frame: .zero)
+        view.processDelegate = ptyController
+        view.getTerminal().silentLog = true
+        ptyController.terminalView = view
+        print("🖥️ [TerminalTab] Created LocalProcessTerminalView for tab \(id)")
+        return view
+    }()
 
     init(
         id: UUID = UUID(),
@@ -22,5 +34,9 @@ class TerminalTab: Identifiable, ObservableObject {
         self.title = title
         self.workingDirectory = workingDirectory
         self.isActive = isActive
+
+        // Create PTYController once when tab is created
+        self.ptyController = PTYController()
+        print("🆕 [TerminalTab] Created tab \(id) with controller \(ObjectIdentifier(ptyController))")
     }
 }
