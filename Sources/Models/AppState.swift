@@ -178,6 +178,14 @@ class AppState: ObservableObject {
         print("🔔 [AppState] Triggered objectWillChange for tab selection")
     }
 
+    func reorderTab(in group: TabGroup, from sourceIndex: Int, to destinationIndex: Int) {
+        print("🔄 [AppState] Reordering tab in group '\(group.name)' from \(sourceIndex) to \(destinationIndex)")
+        group.moveTab(from: sourceIndex, to: destinationIndex)
+        objectWillChange.send()
+        print("🔔 [AppState] Triggered objectWillChange for tab reorder")
+        saveState()
+    }
+
     // MARK: - Sidebar Management
 
     func toggleSidebar() {

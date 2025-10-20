@@ -63,6 +63,16 @@ class TabGroup: Identifiable, ObservableObject, Equatable {
         selectedTabId = tabs[previousIndex].id
     }
 
+    func moveTab(from sourceIndex: Int, to destinationIndex: Int) {
+        guard sourceIndex >= 0, sourceIndex < tabs.count,
+              destinationIndex >= 0, destinationIndex < tabs.count,
+              sourceIndex != destinationIndex
+        else { return }
+
+        let tab = tabs.remove(at: sourceIndex)
+        tabs.insert(tab, at: destinationIndex)
+    }
+
     // MARK: - Equatable
 
     static func == (lhs: TabGroup, rhs: TabGroup) -> Bool {

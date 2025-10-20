@@ -1,4 +1,14 @@
 import SwiftUI
+import UniformTypeIdentifiers
+
+extension UTType {
+    static let terminalTab = UTType(exportedAs: "com.tabula.terminaltab")
+}
+
+// Helper struct to make the tab ID codable for drag and drop
+struct DraggedTab: Codable {
+    let tabId: String
+}
 
 struct SidebarView: View {
     @EnvironmentObject var appState: AppState
@@ -86,9 +96,14 @@ struct TabRow: View {
     @EnvironmentObject var appState: AppState
     @ObservedObject var tab: TerminalTab
     @ObservedObject var group: TabGroup
+    @State private var isDropTarget = false
 
     var isSelected: Bool {
         group.selectedTabId == tab.id
+    }
+
+    var tabIndex: Int? {
+        group.tabs.firstIndex(where: { $0.id == tab.id })
     }
 
     // Abbreviate home directory with ~
@@ -138,7 +153,16 @@ struct TabRow: View {
         }
         .padding(.vertical, 6)
         .padding(.horizontal, 8)
-        .background(isSelected ? Color.accentColor.opacity(0.15) : Color.clear)
+        .background(
+            ZStack {
+                if isSelected {
+                    Color.accentColor.opacity(0.15)
+                }
+                if isDropTarget {
+                    Color.accentColor.opacity(0.3)
+                }
+            }
+        )
         .cornerRadius(6)
         .onTapGesture {
             appState.selectTab(tab.id, in: group)
@@ -149,5 +173,88 @@ struct TabRow: View {
             }
             .disabled(group.tabs.count == 1)
         }
+        .onDrag {
+            print("🚀 [TabRow] Starting drag for tab '\(tab.title)' with ID \(tab.id)")
+            return NSItemProvider(object: tab.id.uuidString as NSString)
+        }
+        .onDrop(of: [.plainText], delegate: TabDropDelegate(
+            tab: tab,
+            group: group,
+            appState: appState,
+            isDropTarget: $isDropTarget
+        ))
+    }
+}
+
+struct TabDropDelegate: DropDelegate {
+    let tab: TerminalTab
+    let group: TabGroup
+    let appState: AppState
+    @Binding var isDropTarget: Bool
+
+    func validateDrop(info: DropInfo) -> Bool {
+        let hasPlainText = info.hasItemsConforming(to: [.plainText])
+        print("🔍 [TabDropDelegate] validateDrop called for tab '\(tab.title)': hasPlainText=\(hasPlainText)")
+        print("🔍 [TabDropDelegate] Available types: \(info.itemProviders(for: [.plainText]).first?.registeredTypeIdentifiers ?? [])")
+        return hasPlainText
+    }
+
+    func dropEntered(info: DropInfo) {
+        print("✅ [TabDropDelegate] dropEntered for tab '\(tab.title)'")
+        isDropTarget = true
+    }
+
+    func dropExited(info: DropInfo) {
+        print("❌ [TabDropDelegate] dropExited for tab '\(tab.title)'")
+        isDropTarget = false
+    }
+
+    func performDrop(info: DropInfo) -> Bool {
+        print("🎯 [TabDropDelegate] performDrop called for tab '\(tab.title)'")
+        isDropTarget = false
+
+        guard let itemProvider = info.itemProviders(for: [.plainText]).first else {
+            print("⚠️ [TabDropDelegate] No item provider found")
+            return false
+        }
+
+        print("📦 [TabDropDelegate] Item provider found, loading data...")
+
+        itemProvider.loadObject(ofClass: NSString.self) { object, error in
+            if let error = error {
+                print("❌ [TabDropDelegate] Error loading item: \(error)")
+                return
+            }
+
+            guard let uuidString = object as? String else {
+                print("⚠️ [TabDropDelegate] Could not get string from object: \(String(describing: object))")
+                return
+            }
+
+            print("📝 [TabDropDelegate] Decoded UUID string: \(uuidString)")
+
+            guard let draggedTabId = UUID(uuidString: uuidString) else {
+                print("⚠️ [TabDropDelegate] Invalid UUID string: \(uuidString)")
+                return
+            }
+
+            guard let sourceIndex = self.group.tabs.firstIndex(where: { $0.id == draggedTabId }) else {
+                print("⚠️ [TabDropDelegate] Could not find source tab with ID \(draggedTabId)")
+                return
+            }
+
+            guard let destinationIndex = self.group.tabs.firstIndex(where: { $0.id == self.tab.id }) else {
+                print("⚠️ [TabDropDelegate] Could not find destination tab with ID \(self.tab.id)")
+                return
+            }
+
+            print("🔄 [TabDropDelegate] Moving tab from index \(sourceIndex) to \(destinationIndex)")
+
+            DispatchQueue.main.async {
+                self.appState.reorderTab(in: self.group, from: sourceIndex, to: destinationIndex)
+            }
+        }
+
+        return true
     }
 }
