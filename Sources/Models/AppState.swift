@@ -193,6 +193,26 @@ class AppState: ObservableObject {
         objectWillChange.send()
     }
 
+    // MARK: - Font Size Management
+
+    func increaseFontSize() {
+        if preferences.fontSize < 24 {
+            preferences.fontSize += 1
+            objectWillChange.send()
+            saveState()
+            print("🔠 [AppState] Increased font size to \(preferences.fontSize)")
+        }
+    }
+
+    func decreaseFontSize() {
+        if preferences.fontSize > 10 {
+            preferences.fontSize -= 1
+            objectWillChange.send()
+            saveState()
+            print("🔠 [AppState] Decreased font size to \(preferences.fontSize)")
+        }
+    }
+
     // MARK: - Persistence
 
     func saveState() {

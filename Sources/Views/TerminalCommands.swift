@@ -54,6 +54,18 @@ struct TerminalCommands: Commands {
             }
             .keyboardShortcut("b", modifiers: [.command])
         }
+
+        CommandMenu("View") {
+            Button("Increase Font Size") {
+                appState?.increaseFontSize()
+            }
+            .keyboardShortcut("=", modifiers: [.command])
+
+            Button("Decrease Font Size") {
+                appState?.decreaseFontSize()
+            }
+            .keyboardShortcut("-", modifiers: [.command])
+        }
     }
 }
 
