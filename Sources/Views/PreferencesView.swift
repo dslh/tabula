@@ -41,14 +41,42 @@ struct GeneralPreferences: View {
 struct AppearancePreferences: View {
     @EnvironmentObject var appState: AppState
 
+    // List of common monospace fonts available on macOS
+    private let monospaceFonts: [String] = {
+        let fontFamilies = NSFontManager.shared.availableFontFamilies
+        var monospace: [String] = []
+
+        // Check each font family to see if it's monospace
+        for family in fontFamilies {
+            if let font = NSFont(name: family, size: 12) {
+                // Check if the font is fixed pitch (monospace)
+                if font.isFixedPitch {
+                    monospace.append(family)
+                }
+            }
+        }
+
+        // Add some common monospace fonts that might not be detected
+        let commonMonospace = ["SF Mono", "Menlo", "Monaco", "Courier", "Courier New",
+                               "Andale Mono", "DejaVu Sans Mono", "Consolas",
+                               "Source Code Pro", "Fira Code", "JetBrains Mono"]
+
+        // Combine and deduplicate
+        let combined = Set(monospace + commonMonospace)
+
+        // Filter to only fonts that actually exist
+        return combined.filter { fontName in
+            NSFont(name: fontName, size: 12) != nil
+        }.sorted()
+    }()
+
     var body: some View {
         Form {
             Section("Font") {
-                HStack {
-                    Text("Font:")
-                    Spacer()
-                    Text(appState.preferences.fontName)
-                        .foregroundColor(.secondary)
+                Picker("Font:", selection: $appState.preferences.fontName) {
+                    ForEach(monospaceFonts, id: \.self) { fontName in
+                        Text(fontName).tag(fontName)
+                    }
                 }
 
                 Slider(
@@ -81,5 +109,11 @@ struct AppearancePreferences: View {
         }
         .formStyle(.grouped)
         .padding()
+        .onChange(of: appState.preferences) { _, _ in
+            // Save state when preferences change
+            appState.saveState()
+            // Trigger objectWillChange to update all terminal views
+            appState.objectWillChange.send()
+        }
     }
 }

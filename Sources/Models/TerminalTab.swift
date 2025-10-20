@@ -24,6 +24,41 @@ class TerminalTab: Identifiable, ObservableObject {
         return view
     }()
 
+    /// Applies appearance preferences to the terminal view
+    func applyPreferences(_ preferences: Preferences) {
+        // Apply font
+        if let font = NSFont(name: preferences.fontName, size: preferences.fontSize) {
+            terminalView.font = font
+            print("🎨 [TerminalTab] Applied font: \(preferences.fontName) \(preferences.fontSize)pt")
+        } else {
+            // Fallback to monospace font if specified font is not available
+            terminalView.font = NSFont.monospacedSystemFont(ofSize: preferences.fontSize, weight: .regular)
+            print("⚠️ [TerminalTab] Font '\(preferences.fontName)' not found, using monospace system font")
+        }
+
+        // Apply color scheme
+        switch preferences.colorScheme {
+        case .light:
+            terminalView.nativeForegroundColor = .black
+            terminalView.nativeBackgroundColor = .white
+            print("🎨 [TerminalTab] Applied light color scheme")
+        case .dark:
+            terminalView.nativeForegroundColor = .white
+            terminalView.nativeBackgroundColor = .black
+            print("🎨 [TerminalTab] Applied dark color scheme")
+        case .system:
+            // Use system appearance
+            if NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua {
+                terminalView.nativeForegroundColor = .white
+                terminalView.nativeBackgroundColor = .black
+            } else {
+                terminalView.nativeForegroundColor = .black
+                terminalView.nativeBackgroundColor = .white
+            }
+            print("🎨 [TerminalTab] Applied system color scheme")
+        }
+    }
+
     init(
         id: UUID = UUID(),
         title: String = "Terminal",

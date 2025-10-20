@@ -222,7 +222,7 @@ class AppState: ObservableObject {
 }
 
 /// User preferences for the terminal
-struct Preferences {
+struct Preferences: Equatable {
     var fontName: String = "SF Mono"
     var fontSize: CGFloat = 13
     var colorScheme: ColorScheme = .system

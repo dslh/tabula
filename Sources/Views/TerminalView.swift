@@ -42,12 +42,16 @@ struct TerminalView: View {
 struct SwiftTermView: NSViewRepresentable {
     @ObservedObject var controller: PTYController
     @ObservedObject var tab: TerminalTab
+    @EnvironmentObject var appState: AppState
 
     func makeNSView(context: Context) -> LocalProcessTerminalView {
         print("🖼️ [SwiftTermView] makeNSView - returning tab's persistent terminalView")
 
         // Return the tab's persistent terminal view (created once via lazy var)
         let terminalView = tab.terminalView
+
+        // Apply current preferences
+        tab.applyPreferences(appState.preferences)
 
         // Start thumbnail generation after a short delay
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
@@ -59,6 +63,8 @@ struct SwiftTermView: NSViewRepresentable {
 
     func updateNSView(_ nsView: LocalProcessTerminalView, context: Context) {
         print("🔄 [SwiftTermView] updateNSView called for tab \(tab.id)")
+        // Apply preferences whenever the view updates (e.g., when preferences change)
+        tab.applyPreferences(appState.preferences)
     }
 
     func makeCoordinator() -> Coordinator {
