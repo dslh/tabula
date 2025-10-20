@@ -4,6 +4,7 @@ import SwiftUI
 struct TerminalGroupsApp: App {
     @StateObject private var appState = AppState()
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @Environment(\.colorScheme) private var systemColorScheme
 
     var body: some Scene {
         WindowGroup {
@@ -32,7 +33,9 @@ struct TerminalGroupsApp: App {
         case .dark:
             return .dark
         case .system:
-            return nil  // nil means follow system setting
+            // Explicitly detect and return the current system appearance
+            let isDark = NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+            return isDark ? .dark : .light
         }
     }
 }
