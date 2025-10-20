@@ -10,6 +10,7 @@ struct TerminalGroupsApp: App {
             ContentView()
                 .environmentObject(appState)
                 .frame(minWidth: 800, minHeight: 600)
+                .preferredColorScheme(colorScheme(from: appState.preferences.colorScheme))
         }
         .windowStyle(.hiddenTitleBar)
         .commands {
@@ -19,6 +20,19 @@ struct TerminalGroupsApp: App {
         Settings {
             PreferencesView()
                 .environmentObject(appState)
+                .preferredColorScheme(colorScheme(from: appState.preferences.colorScheme))
+        }
+    }
+
+    /// Converts app preferences color scheme to SwiftUI color scheme
+    private func colorScheme(from preference: Preferences.ColorScheme) -> ColorScheme? {
+        switch preference {
+        case .light:
+            return .light
+        case .dark:
+            return .dark
+        case .system:
+            return nil  // nil means follow system setting
         }
     }
 }
