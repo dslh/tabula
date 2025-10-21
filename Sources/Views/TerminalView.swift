@@ -11,7 +11,11 @@ struct TerminalView: View {
     }
 
     var body: some View {
-        SwiftTermView(controller: tab.ptyController, tab: tab)
+        SwiftTermView(controller: tab.ptyController, tab: tab, preferences: appState.preferences)
+            .onChange(of: appState.preferences) { oldPreferences, newPreferences in
+                print("🎨 [TerminalView] Preferences changed, applying to tab \(tab.id)")
+                tab.applyPreferences(newPreferences)
+            }
             .onAppear {
                 print("👁️ [TerminalView] onAppear for tab \(tab.id)")
                 print("👁️ [TerminalView] Controller ID: \(ObjectIdentifier(tab.ptyController))")
@@ -42,7 +46,7 @@ struct TerminalView: View {
 struct SwiftTermView: NSViewRepresentable {
     @ObservedObject var controller: PTYController
     @ObservedObject var tab: TerminalTab
-    @EnvironmentObject var appState: AppState
+    let preferences: Preferences
 
     func makeNSView(context: Context) -> LocalProcessTerminalView {
         print("🖼️ [SwiftTermView] makeNSView - returning tab's persistent terminalView")
@@ -50,8 +54,8 @@ struct SwiftTermView: NSViewRepresentable {
         // Return the tab's persistent terminal view (created once via lazy var)
         let terminalView = tab.terminalView
 
-        // Apply current preferences
-        tab.applyPreferences(appState.preferences)
+        // Apply initial preferences
+        tab.applyPreferences(preferences)
 
         // Start thumbnail generation after a short delay
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
@@ -62,9 +66,8 @@ struct SwiftTermView: NSViewRepresentable {
     }
 
     func updateNSView(_ nsView: LocalProcessTerminalView, context: Context) {
-        print("🔄 [SwiftTermView] updateNSView called for tab \(tab.id)")
-        // Apply preferences whenever the view updates (e.g., when preferences change)
-        tab.applyPreferences(appState.preferences)
+        // Intentionally empty - preferences are applied via .onChange modifier
+        // This prevents unnecessary reconfiguration when unrelated state changes occur
     }
 
     func makeCoordinator() -> Coordinator {
