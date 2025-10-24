@@ -147,6 +147,7 @@ struct TabRow: View {
                     .font(.system(size: 11))
                     .foregroundColor(.secondary)
                     .lineLimit(1)
+                    .truncationMode(.head)
             }
 
             Spacer()
