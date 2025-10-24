@@ -10,35 +10,59 @@ struct TerminalView: View {
         print("🎬 [TerminalView] INIT for tab \(tab.id)")
     }
 
+    /// Calculate total font height including line spacing
+    private func fontTotalHeight(_ font: NSFont) -> CGFloat {
+        let lineHeight = font.ascender - font.descender
+        let lineSpacing = font.leading
+        return (lineHeight + lineSpacing).rounded(.up)
+    }
+
     var body: some View {
-        SwiftTermView(controller: tab.ptyController, tab: tab, preferences: appState.preferences)
-            .onChange(of: appState.preferences) { oldPreferences, newPreferences in
-                print("🎨 [TerminalView] Preferences changed, applying to tab \(tab.id)")
-                tab.applyPreferences(newPreferences)
-            }
-            .onAppear {
-                print("👁️ [TerminalView] onAppear for tab \(tab.id)")
-                print("👁️ [TerminalView] Controller ID: \(ObjectIdentifier(tab.ptyController))")
+        GeometryReader { geometry in
+            let containerHeight = geometry.size.height
 
-                // Only start shell once per tab, even if view is recreated
-                if !tab.hasStartedShell {
-                    print("🚀 [TerminalView] Starting shell for first time")
-                    tab.ptyController.startShell()
-                    tab.hasStartedShell = true
-                } else {
-                    print("♻️ [TerminalView] Reusing existing shell session")
-                }
+            // Get the font that will be used
+            let font = NSFont(name: appState.preferences.fontName, size: appState.preferences.fontSize)
+                ?? NSFont.monospacedSystemFont(ofSize: appState.preferences.fontSize, weight: .regular)
 
-                // Auto-focus the terminal view
-                DispatchQueue.main.async {
-                    tab.terminalView.window?.makeFirstResponder(tab.terminalView)
-                    print("🎯 [TerminalView] Set terminal as first responder")
+            let totalFontHeight = fontTotalHeight(font)
+
+            // Constrain height to integer multiples of font height
+            // This prevents partial character rows and buffer calculation issues
+            let constrainedHeight = containerHeight - containerHeight.truncatingRemainder(
+                dividingBy: totalFontHeight
+            )
+
+            SwiftTermView(controller: tab.ptyController, tab: tab, preferences: appState.preferences)
+                .frame(height: max(0, constrainedHeight))
+                .onChange(of: appState.preferences) { oldPreferences, newPreferences in
+                    print("🎨 [TerminalView] Preferences changed, applying to tab \(tab.id)")
+                    tab.applyPreferences(newPreferences)
                 }
-            }
-            .onDisappear {
-                print("👋 [TerminalView] onDisappear for tab \(tab.id)")
-                // Keep the shell running and hasStartedShell=true
-            }
+                .onAppear {
+                    print("👁️ [TerminalView] onAppear for tab \(tab.id)")
+                    print("👁️ [TerminalView] Controller ID: \(ObjectIdentifier(tab.ptyController))")
+
+                    // Only start shell once per tab, even if view is recreated
+                    if !tab.hasStartedShell {
+                        print("🚀 [TerminalView] Starting shell for first time")
+                        tab.ptyController.startShell()
+                        tab.hasStartedShell = true
+                    } else {
+                        print("♻️ [TerminalView] Reusing existing shell session")
+                    }
+
+                    // Auto-focus the terminal view
+                    DispatchQueue.main.async {
+                        tab.terminalView.window?.makeFirstResponder(tab.terminalView)
+                        print("🎯 [TerminalView] Set terminal as first responder")
+                    }
+                }
+                .onDisappear {
+                    print("👋 [TerminalView] onDisappear for tab \(tab.id)")
+                    // Keep the shell running and hasStartedShell=true
+                }
+        }
     }
 }
 
@@ -48,7 +72,7 @@ struct SwiftTermView: NSViewRepresentable {
     @ObservedObject var tab: TerminalTab
     let preferences: Preferences
 
-    func makeNSView(context: Context) -> LocalProcessTerminalView {
+    func makeNSView(context: Context) -> CustomLocalProcessTerminalView {
         print("🖼️ [SwiftTermView] makeNSView - returning tab's persistent terminalView")
 
         // Return the tab's persistent terminal view (created once via lazy var)
@@ -65,9 +89,13 @@ struct SwiftTermView: NSViewRepresentable {
         return terminalView
     }
 
-    func updateNSView(_ nsView: LocalProcessTerminalView, context: Context) {
-        // Intentionally empty - preferences are applied via .onChange modifier
-        // This prevents unnecessary reconfiguration when unrelated state changes occur
+    func updateNSView(_ nsView: CustomLocalProcessTerminalView, context: Context) {
+        print("🔄 [SwiftTermView] updateNSView called for tab \(tab.id)")
+
+        // Soft reset + empty feed forces a visual refresh without clearing buffer
+        // This ensures the terminal properly redraws after tab switching
+        nsView.getTerminal().softReset()
+        nsView.feed(text: "")
     }
 
     func makeCoordinator() -> Coordinator {

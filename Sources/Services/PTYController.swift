@@ -3,7 +3,7 @@ import SwiftTerm
 
 /// Manages the PTY (pseudo-terminal) and shell process lifecycle
 class PTYController: NSObject, ObservableObject, LocalProcessTerminalViewDelegate {
-    weak var terminalView: LocalProcessTerminalView?
+    weak var terminalView: CustomLocalProcessTerminalView?
     weak var tab: TerminalTab?
     private var childProcessId: Int32 = 0
     private var shellPath: String {

@@ -15,12 +15,13 @@ class TerminalTab: Identifiable, ObservableObject {
     var hasStartedShell = false
 
     // The actual terminal view - created once and kept alive with the tab
-    lazy var terminalView: LocalProcessTerminalView = {
-        let view = LocalProcessTerminalView(frame: .zero)
+    // Uses CustomLocalProcessTerminalView to prevent zero-frame buffer issues
+    lazy var terminalView: CustomLocalProcessTerminalView = {
+        let view = CustomLocalProcessTerminalView(frame: .zero)
         view.processDelegate = ptyController
         view.getTerminal().silentLog = true
         ptyController.terminalView = view
-        print("🖥️ [TerminalTab] Created LocalProcessTerminalView for tab \(id)")
+        print("🖥️ [TerminalTab] Created CustomLocalProcessTerminalView for tab \(id)")
         return view
     }()
 
