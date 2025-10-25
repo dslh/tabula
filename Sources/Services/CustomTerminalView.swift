@@ -1,4 +1,5 @@
 import Foundation
+import AppKit
 import SwiftTerm
 
 /// Custom LocalProcessTerminalView with zero-frame protection
@@ -28,6 +29,18 @@ class CustomLocalProcessTerminalView: LocalProcessTerminalView {
                 print("🛡️ [CustomLocalProcessTerminalView] Blocked zero frame assignment in frame setter")
             }
         }
+    }
+
+    /// Override copy to properly extract and copy selected terminal text
+    /// Uses CodeEdit's SwiftTerm fork which exposes selectedPositions() API
+    @objc
+    public override func copy(_ sender: Any) {
+        let range = selectedPositions()
+        let text = terminal.getText(start: range.start, end: range.end)
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(text, forType: .string)
+        print("📋 [CustomLocalProcessTerminalView] Copied \(text.count) characters to clipboard")
     }
 
     /// Terminates the shell process if it's running

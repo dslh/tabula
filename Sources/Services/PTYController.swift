@@ -34,6 +34,7 @@ class PTYController: NSObject, ObservableObject, LocalProcessTerminalViewDelegat
         var env = ProcessInfo.processInfo.environment
         env["TERM"] = "xterm-256color"
         env["COLORTERM"] = "truecolor"
+        env["TERM_PROGRAM"] = "Tabula"
 
         // Convert environment to array of C strings
         let envArray = env.map { "\($0.key)=\($0.value)" }
@@ -58,6 +59,9 @@ class PTYController: NSObject, ObservableObject, LocalProcessTerminalViewDelegat
             execName: "-" + (shellPath as NSString).lastPathComponent  // Login shell
         )
 
+        // Note: startProcess doesn't throw errors directly. Failures will be reported
+        // via the processTerminated delegate method with a nil exit code.
+
         // Restore the parent process's working directory
         FileManager.default.changeCurrentDirectoryPath(savedDirectory)
 
@@ -67,7 +71,23 @@ class PTYController: NSObject, ObservableObject, LocalProcessTerminalViewDelegat
     // MARK: - LocalProcessTerminalViewDelegate
 
     func sizeChanged(source: LocalProcessTerminalView, newCols: Int, newRows: Int) {
+        // Guard against resizing a terminated process
+        guard let terminalView = terminalView else { return }
+
+        // Use reflection to check if process is running
+        let mirror = Mirror(reflecting: terminalView)
+        for child in mirror.children {
+            if child.label == "process", let process = child.value as? LocalProcess {
+                guard process.running else {
+                    print("⚠️ [PTYController] Ignoring resize on terminated process")
+                    return
+                }
+                break
+            }
+        }
+
         // Terminal size changed, PTY will be automatically updated by SwiftTerm
+        print("📐 [PTYController] Terminal resized to \(newCols)x\(newRows)")
     }
 
     func setTerminalTitle(source: LocalProcessTerminalView, title: String) {
