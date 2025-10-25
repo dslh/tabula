@@ -39,6 +39,11 @@ class TabGroup: Identifiable, ObservableObject, Equatable {
     }
 
     func removeTab(_ tab: TerminalTab) {
+        print("🗑️ [TabGroup] Removing tab \(tab.id) from group '\(name)'")
+
+        // Cleanup the tab's resources before removing
+        tab.cleanup()
+
         tabs.removeAll { $0.id == tab.id }
         if selectedTabId == tab.id {
             selectedTabId = tabs.first?.id

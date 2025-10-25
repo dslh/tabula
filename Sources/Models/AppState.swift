@@ -49,6 +49,13 @@ class AppState: ObservableObject {
     }
 
     func removeGroup(_ group: TabGroup) {
+        print("🗑️ [AppState] Removing group '\(group.name)' with \(group.tabs.count) tabs")
+
+        // Cleanup all tabs in the group
+        for tab in group.tabs {
+            tab.cleanup()
+        }
+
         groups.removeAll { $0.id == group.id }
         if selectedGroupId == group.id {
             if let firstGroupId = groups.first?.id {

@@ -29,4 +29,21 @@ class CustomLocalProcessTerminalView: LocalProcessTerminalView {
             }
         }
     }
+
+    /// Terminates the shell process if it's running
+    public func terminateShellProcess() {
+        // Use reflection to access the internal process property
+        let mirror = Mirror(reflecting: self)
+        for child in mirror.children {
+            if child.label == "process", let process = child.value as? LocalProcess {
+                let shellPid = process.shellPid
+                if shellPid > 0 {
+                    print("🛑 [CustomLocalProcessTerminalView] Terminating process with PID: \(shellPid)")
+                    kill(shellPid, SIGTERM)
+                    return
+                }
+            }
+        }
+        print("⚠️ [CustomLocalProcessTerminalView] No process found to terminate")
+    }
 }

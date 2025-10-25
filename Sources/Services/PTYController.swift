@@ -87,7 +87,26 @@ class PTYController: NSObject, ObservableObject, LocalProcessTerminalViewDelegat
     }
 
     func processTerminated (source: SwiftTerm.TerminalView, exitCode: Int32?) {
-        print("💀 [PTYController] Shell process terminated with exit code: \(exitCode ?? -1) - Controller ID: \(ObjectIdentifier(self))")
-        // Could handle shell exit here (restart, close tab, etc.)
+        let code = exitCode ?? -1
+        print("💀 [PTYController] Shell process terminated with exit code: \(code) - Controller ID: \(ObjectIdentifier(self))")
+
+        // Display exit code in the terminal
+        if let terminalView = terminalView {
+            terminalView.feed(text: "\r\n")
+            terminalView.feed(text: "[Process completed with exit code \(code)]\r\n")
+        }
+
+        // Mark tab as exited
+        tab?.hasExited = true
+    }
+
+    /// Terminates the shell process if it's still running
+    func terminateProcess() {
+        guard let terminalView = terminalView else {
+            print("⚠️ [PTYController] No terminal view to terminate")
+            return
+        }
+
+        terminalView.terminateShellProcess()
     }
 }

@@ -13,17 +13,36 @@ class TerminalTab: Identifiable, ObservableObject {
     // Terminal state is managed by PTYController - created once and kept alive
     let ptyController: PTYController
     var hasStartedShell = false
+    @Published var hasExited = false
 
     // The actual terminal view - created once and kept alive with the tab
     // Uses CustomLocalProcessTerminalView to prevent zero-frame buffer issues
     lazy var terminalView: CustomLocalProcessTerminalView = {
         let view = CustomLocalProcessTerminalView(frame: .zero)
         view.processDelegate = ptyController
-        view.getTerminal().silentLog = true
+
+        // Configure terminal settings
+        let terminal = view.getTerminal()
+        terminal.silentLog = true
+
+        // Note: SwiftTerm's LocalProcessTerminalView doesn't expose a way to set
+        // scrollback buffer size after creation. The default should be reasonable.
+        // To customize this, we'd need to create our own implementation similar to
+        // CodeEdit's that passes TerminalOptions(scrollback: 2000) during Terminal init.
+
         ptyController.terminalView = view
         print("🖥️ [TerminalTab] Created CustomLocalProcessTerminalView for tab \(id)")
         return view
     }()
+
+    /// Restarts the shell after it has exited
+    func restartShell() {
+        hasExited = false
+        hasStartedShell = false
+        ptyController.startShell()
+        hasStartedShell = true
+        print("🔄 [TerminalTab] Shell restarted for tab \(id)")
+    }
 
     /// Applies appearance preferences to the terminal view
     func applyPreferences(_ preferences: Preferences) {
@@ -75,5 +94,16 @@ class TerminalTab: Identifiable, ObservableObject {
         self.ptyController = PTYController()
         self.ptyController.tab = self  // Link controller back to tab
         print("🆕 [TerminalTab] Created tab \(id) with controller \(ObjectIdentifier(ptyController))")
+    }
+
+    /// Cleanup method to properly terminate the shell process
+    func cleanup() {
+        print("🧹 [TerminalTab] Cleaning up tab \(id)")
+        ptyController.terminateProcess()
+    }
+
+    deinit {
+        print("💀 [TerminalTab] Deinit tab \(id)")
+        cleanup()
     }
 }
